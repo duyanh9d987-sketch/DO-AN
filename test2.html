@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BKLink - Hệ Thống Quản Lý Bán Thiết Bị Điện Tử & IoT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #1e40af; --secondary-blue: #3b82f6; --light-blue: #e9f2fa;
+            --dark-gray: #333; --medium-gray: #555; --light-gray: #f4f4f5;
+            --text-color: #1f2937; --success-green: #10b981; --danger-red: #ef4444; --warning-yellow: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #fff; color: var(--text-color); line-height: 1.6; }
+        .container { width: 90%; max-width: 1200px; margin: 0 auto; }
+        main > section { padding: 60px 0; display: none; }
+        main > section.active { display: block; }
+        h1, h2, h3 { line-height: 1.3; }
+        h2 { font-size: 32px; text-align: center; margin-bottom: 40px; color: var(--primary-blue); }
+        .button, button { background-color: var(--secondary-blue); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background-color 0.3s ease; border: none; cursor: pointer; display: inline-block; font-size: 16px; }
+        .button:hover, button:hover { background-color: #2563eb; }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        .button-danger { background-color: var(--danger-red); }
+        .button-danger:hover { background-color: #dc2626; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-family: 'Inter', sans-serif; font-size: 16px; }
+
+        /* --- Header & Navigation --- */
+        .main-header { background-color: white; padding: 15px 0; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .main-header .container { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 700; color: var(--primary-blue); text-decoration: none; }
+        .main-nav ul { list-style: none; display: flex; gap: 25px; align-items: center; }
+        .main-nav a { text-decoration: none; color: var(--medium-gray); font-weight: 500; transition: color 0.3s ease; cursor: pointer; }
+        .main-nav a:hover { color: var(--secondary-blue); }
+        #cart-icon { position: relative; }
+        #cart-count { position: absolute; top: -8px; right: -12px; background-color: var(--danger-red); color: white; font-size: 12px; border-radius: 50%; padding: 2px 6px; display: none; }
+
+        /* --- Hero Section --- */
+        .hero { background: linear-gradient(rgba(30, 64, 175, 0.8), rgba(30, 64, 175, 0.8)), url('https://images.unsplash.com/photo-1555664424-778a1e5e1b48?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover; color: white; text-align: center; padding: 100px 0; }
+        .hero h1 { font-size: 48px; margin-bottom: 15px; }
+        .hero p { font-size: 18px; max-width: 600px; margin: 0 auto 30px; }
+
+        /* --- Products Section --- */
+        .product-page-layout { display: flex; flex-wrap: wrap; gap: 30px; }
+        .filters { flex: 1 1 250px; }
+        .product-list-container { flex: 1 1 70%; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+        .product-card { background-color: white; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; display: flex; flex-direction: column; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .product-card img { width: 100%; height: 180px; object-fit: cover; }
+        .product-info { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .product-info h3 { font-size: 16px; margin-bottom: 10px; font-weight: 600; }
+        .product-price { font-size: 16px; font-weight: 700; color: var(--secondary-blue); margin-bottom: 10px; }
+        
+        /* --- Product Detail Page --- */
+        .product-detail-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: flex-start; }
+        .product-detail-layout img { width: 100%; border-radius: 10px; border: 1px solid #eee; }
+        .product-detail-info h1 { font-size: 32px; color: var(--primary-blue); margin-bottom: 15px; }
+        .product-detail-price { font-size: 24px; font-weight: bold; color: var(--secondary-blue); margin-bottom: 20px; }
+        .product-detail-stock { font-weight: 500; margin-bottom: 20px; }
+        .add-to-cart-form { display: flex; gap: 15px; align-items: center; margin-top: 20px; }
+        .add-to-cart-form input[type="number"] { width: 80px; padding: 10px; text-align: center; }
+        .product-specs { margin-top: 30px; }
+        .product-specs h3 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .product-specs ul { list-style: none; padding-left: 0; }
+        .product-specs li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+        .product-specs li span:first-child { font-weight: 500; }
+        .datasheet-link { display: inline-block; margin-top: 20px; font-weight: 600; }
+
+        /* --- Auth Pages (Login/Register) --- */
+        .auth-container { max-width: 450px; margin: 60px auto; padding: 40px; background-color: var(--light-gray); border-radius: 10px; }
+        
+        /* --- Cart & Checkout --- */
+        .cart-item { display: grid; grid-template-columns: 100px 1fr auto auto; gap: 20px; align-items: center; padding: 15px 0; border-bottom: 1px solid #e5e7eb; }
+        .cart-item img { width: 100%; border-radius: 5px; }
+        .cart-total { text-align: right; font-size: 20px; font-weight: bold; margin-top: 20px; }
+        .checkout-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; align-items: flex-start; }
+        #order-summary { background-color: var(--light-gray); padding: 20px; border-radius: 8px; }
+
+        /* --- Dashboard --- */
+        .dashboard-nav { display: flex; flex-wrap: wrap; justify-content: center; border-bottom: 1px solid #ccc; margin-bottom: 40px; }
+        .dashboard-nav button { padding: 15px 25px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; color: var(--medium-gray); border-bottom: 3px solid transparent; transition: color 0.3s, border-color 0.3s; }
+        .dashboard-nav button.active, .dashboard-nav button:hover { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
+        .dashboard-content { display: none; }
+        .dashboard-content.active { display: block; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
+        th { background-color: var(--light-gray); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: center; }
+        .stat-card { background: var(--light-gray); padding: 25px; border-radius: 8px; }
+        .stat-card h4 { font-size: 18px; color: var(--medium-gray); }
+        .stat-card p { font-size: 32px; font-weight: bold; color: var(--primary-blue); }
+        .status-badge { padding: 4px 8px; border-radius: 12px; color: white; font-size: 12px; font-weight: 600; display: inline-block; }
+        .status-Chờ_xác_nhận { background-color: var(--warning-yellow); }
+        .status-Đã_xác_nhận { background-color: var(--secondary-blue); }
+        .status-Đang_giao { background-color: var(--success-green); }
+        .status-Đã_hoàn_tất { background-color: var(--medium-gray); }
+        .status-Đã_hủy { background-color: var(--danger-red); }
+        
+        /* --- Modal --- */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 30px; border: 1px solid #888; width: 80%; max-width: 700px; border-radius: 10px; position: relative; }
+        .close-btn { color: #aaa; position: absolute; top: 15px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-btn:hover, .close-btn:focus { color: black; }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <a href="#home" class="logo nav-link">BKLink</a>
+            <nav id="main-nav-bar" class="main-nav"></nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Home Page -->
+        <section id="home" class="active">
+            <div class="hero">
+                <div class="container">
+                    <h1>Thế Giới Linh Kiện Điện Tử & Giải Pháp IoT</h1>
+                    <p>Cung cấp hàng ngàn linh kiện chất lượng cao, từ vi điều khiển, cảm biến đến các module sẵn sàng cho dự án của bạn.</p>
+                    <a href="#products" class="button nav-link">Khám Phá Sản Phẩm</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Page (UC02) -->
+        <section id="products">
+            <div class="container">
+                <h2>Sản Phẩm Của Chúng Tôi</h2>
+                <div class="product-page-layout">
+                    <aside class="filters">
+                        <h3>Bộ lọc nâng cao</h3>
+                        <div class="form-group">
+                            <label for="search-box">Tìm kiếm theo tên/SKU</label>
+                            <input type="text" id="search-box" placeholder="VD: Arduino Uno, SKU001">
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-category">Danh mục</label>
+                            <select id="filter-category"><option value="all">Tất cả</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-manufacturer">Nhà sản xuất</label>
+                            <select id="filter-manufacturer"><option value="all">Tất cả</option></select>
+                        </div>
+                    </aside>
+                    <div class="product-list-container">
+                        <div id="product-list" class="product-grid"></div>
+                        <p id="no-product-found" style="display: none; text-align: center; margin-top: 20px;">Không tìm thấy sản phẩm phù hợp.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Detail Page (UC02) -->
+        <section id="product-detail">
+            <div class="container" id="product-detail-content"></div>
+        </section>
+        
+        <!-- Login Page (UC01) -->
+        <section id="login">
+            <div class="auth-container">
+                <h2>Đăng Nhập</h2>
+                <form id="login-form">
+                    <div class="form-group"><label for="login-email">Email</label><input id="login-email" type="email" required></div>
+                    <div class="form-group"><label for="login-password">Mật khẩu</label><input id="login-password" type="password" required></div>
+                    <button type="submit" class="button" style="width: 100%;">Đăng Nhập</button>
+                </form>
+                <p style="text-align: center; margin-top: 15px;">Chưa có tài khoản? <a href="#register" class="nav-link">Đăng ký ngay</a></p>
+            </div>
+        </section>
+
+        <!-- Register Page (UC01) -->
+        <section id="register">
+            <div class="auth-container">
+                <h2>Đăng Ký Tài Khoản</h2>
+                <form id="register-form">
+                    <div class="form-group"><label for="reg-name">Họ và tên</label><input type="text" id="reg-name" required></div>
+                    <div class="form-group"><label for="reg-email">Email</label><input type="email" id="reg-email" required></div>
+                    <div class="form-group"><label for="reg-phone">Số điện thoại</label><input type="tel" id="reg-phone" required></div>
+                    <div class="form-group"><label for="reg-password">Mật khẩu (tối thiểu 6 ký tự)</label><input type="password" id="reg-password" required minlength="6"></div>
+                    <button type="submit" class="button" style="width: 100%;">Đăng Ký</button>
+                </form>
+                 <p style="text-align: center; margin-top: 15px;">Đã có tài khoản? <a href="#login" class="nav-link">Đăng nhập</a></p>
+            </div>
+        </section>
+
+        <!-- Cart Page (UC03) -->
+        <section id="cart">
+            <div class="container">
+                <h2>Giỏ Hàng Của Bạn</h2>
+                <div id="cart-items"></div>
+                <div id="cart-summary" style="display: none;">
+                    <p class="cart-total">Tổng cộng: <span id="cart-total-price">0</span>đ</p>
+                    <div style="text-align: right; margin-top: 20px;">
+                        <button id="checkout-btn" class="button">Tiến Hành Thanh Toán</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Checkout Page (UC04) -->
+        <section id="checkout">
+            <div class="container">
+                <h2>Thanh Toán Đơn Hàng</h2>
+                <div class="checkout-layout">
+                    <div id="shipping-info">
+                        <h3>Thông tin giao hàng</h3>
+                        <form id="shipping-form">
+                            <div class="form-group"><label for="shipping-name">Họ tên người nhận</label><input type="text" id="shipping-name" required></div>
+                            <div class="form-group"><label for="shipping-address">Địa chỉ</label><input type="text" id="shipping-address" required></div>
+                            <div class="form-group"><label for="shipping-phone">Số điện thoại</label><input type="tel" id="shipping-phone" required></div>
+                            <h3>Phương thức thanh toán</h3>
+                            <div class="form-group">
+                                <select id="payment-method">
+                                    <option value="cod">Thanh toán khi nhận hàng (COD)</option>
+                                    <option value="bank">Chuyển khoản ngân hàng</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="order-summary">
+                        <h3>Tóm tắt đơn hàng</h3>
+                        <div id="summary-items"></div>
+                        <p class="cart-total" style="font-size: 18px;">Phí vận chuyển: <span>30,000</span>đ</p>
+                        <p class="cart-total">Tổng thanh toán: <span id="final-total-price">0</span>đ</p>
+                        <button id="confirm-order-btn" class="button" style="width: 100%; margin-top: 20px;">Xác Nhận Đặt Hàng</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Page (UC05, UC06, UC07, UC08) -->
+        <section id="dashboard">
+            <div class="container">
+                <h2 id="dashboard-title">Bảng Điều Khiển</h2>
+                <nav id="dashboard-nav-bar" class="dashboard-nav"></nav>
+                <div id="dashboard-content-container"></div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="main-footer">
+        <div class="container"><div class="footer-grid"><div class="footer-col"><h3>BKLink</h3><p>Nhà cung cấp linh kiện điện tử và giải pháp IoT hàng đầu Việt Nam.</p></div><div class="footer-col"><h3>Sản Phẩm</h3><ul><li><a href="#products" class="nav-link">Vi điều khiển</a></li><li><a href="#products" class="nav-link">Cảm biến</a></li></ul></div><div class="footer-col"><h3>Hỗ Trợ</h3><ul><li><a href="#">Chính sách bảo hành</a></li><li><a href="#">Liên hệ</a></li></ul></div><div class="footer-col"><h3>Liên Hệ</h3><p>Số 1 Đại Cồ Việt, Hà Nội<br><strong>Email:</strong> support@bklink.vn<br><strong>Hotline:</strong> 1900 1234</p></div></div><div class="footer-bottom"><p>&copy; 2024 BKLink. All Rights Reserved.</p></div></div>
+    </footer>
+
+    <!-- Modal for Product Management (UC05) -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-modal-btn" class="close-btn">&times;</span>
+            <h2 id="modal-title">Thêm Sản Phẩm Mới</h2>
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+                <div class="form-group"><label for="product-name">Tên sản phẩm</label><input type="text" id="product-name" required></div>
+                <div class="form-group"><label for="product-sku">Mã SKU</label><input type="text" id="product-sku" required></div>
+                <div class="form-group"><label for="product-price">Giá bán</label><input type="number" id="product-price" required></div>
+                <div class="form-group"><label for="product-stock">Số lượng tồn kho</label><input type="number" id="product-stock" required></div>
+                <div class="form-group"><label for="product-category">Danh mục</label><select id="product-category" required></select></div>
+                <div class="form-group"><label for="product-manufacturer">Nhà sản xuất</label><select id="product-manufacturer" required></select></div>
+                <div class="form-group"><label for="product-img">URL Hình ảnh</label><input type="text" id="product-img" required></div>
+                <div class="form-group"><label for="product-datasheet">URL Datasheet (PDF)</label><input type="text" id="product-datasheet"></div>
+                <div class="form-group"><label for="product-desc">Mô tả</label><textarea id="product-desc" rows="3"></textarea></div>
+                <button type="submit" class="button">Lưu Sản Phẩm</button>
+            </form>
+        </div>
+    </div>
+    
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- DATABASE (SIMULATED) ---
+    let db = {
+        products: [
+            { id: 1, sku: 'SKU001', name: 'Arduino Uno R3', price: 250000, stock: 50, category: 'Vi điều khiển & Vi xử lý', manufacturer: 'Arduino', img: 'https://placehold.co/400x400/3b82f6/ffffff?text=Arduino+Uno', datasheetUrl: '#', description: 'Board mạch vi điều khiển phổ biến nhất cho người mới bắt đầu.', specs: { 'Điện áp hoạt động': '5V', 'Chân Digital I/O': '14', 'Chân Analog Input': '6' } },
+            { id: 2, sku: 'SKU002', name: 'Raspberry Pi 4 Model B', price: 1500000, stock: 20, category: 'Vi điều khiển & Vi xử lý', manufacturer: 'Raspberry Pi', img: 'https://placehold.co/400x400/10b981/ffffff?text=Raspberry+Pi', datasheetUrl: '#', description: 'Máy tính mini mạnh mẽ cho các dự án IoT và media center.', specs: { 'RAM': '4GB', 'Kết nối': 'Wi-Fi, Bluetooth 5.0, Gigabit Ethernet', 'Cổng USB': '2 x USB 3.0, 2 x USB 2.0' } },
+            { id: 3, sku: 'SKU003', name: 'Module ESP32 Wifi Bluetooth', price: 180000, stock: 100, category: 'Module & Mạch phát triển', manufacturer: 'Espressif', img: 'https://placehold.co/400x400/f97316/ffffff?text=ESP32', datasheetUrl: '#', description: 'Module tích hợp Wi-Fi và Bluetooth mạnh mẽ, tiết kiệm năng lượng.', specs: { 'Điện áp hoạt động': '3.3V', 'Chuẩn Wi-Fi': '802.11 b/g/n', 'Bluetooth': 'v4.2 BR/EDR và BLE' } },
+            { id: 4, sku: 'SKU004', name: 'Cảm biến DHT22', price: 90000, stock: 0, category: 'Cảm biến', manufacturer: 'Aosong', img: 'https://placehold.co/400x400/ef4444/ffffff?text=DHT22', datasheetUrl: '#', description: 'Cảm biến kỹ thuật số cho độ chính xác cao hơn DHT11.', specs: { 'Dải đo độ ẩm': '0-100%RH', 'Dải đo nhiệt độ': '-40 đến 80°C', 'Giao tiếp': '1-Wire' } },
+        ],
+        users: [
+            { id: 1, name: 'Admin', email: 'admin@bklink.vn', password: 'password', role: 'admin', phone: '0901234567', active: true },
+            { id: 2, name: 'Nhân Viên Kho', email: 'nhanvien@bklink.vn', password: 'password', role: 'employee', phone: '0902345678', active: true },
+            { id: 3, name: 'Khách Hàng A', email: 'khachhang@bklink.vn', password: 'password', role: 'customer', phone: '0903456789', active: true },
+            { id: 4, name: 'Khách Bị Khóa', email: 'locked@bklink.vn', password: 'password', role: 'customer', phone: '0904567890', active: false },
+        ],
+        orders: [
+            { id: 101, userId: 3, customerInfo: { name: 'Khách Hàng A', address: '123 ABC, Hà Nội', phone: '0903456789' }, items: [{ productId: 1, quantity: 1, price: 250000 }], total: 280000, status: 'Đã hoàn tất', date: '2023-10-10' },
+            { id: 102, userId: 3, customerInfo: { name: 'Khách Hàng A', address: '123 ABC, Hà Nội', phone: '0903456789' }, items: [{ productId: 2, quantity: 1, price: 1500000 }], total: 1530000, status: 'Đang giao', date: '2023-10-24' },
+            { id: 103, userId: 3, customerInfo: { name: 'Khách Hàng A', address: '123 ABC, Hà Nội', phone: '0903456789' }, items: [{ productId: 3, quantity: 2, price: 180000 }], total: 390000, status: 'Chờ xác nhận', date: '2023-10-25' },
+        ],
+        categories: ['Vi điều khiển & Vi xử lý', 'Cảm biến', 'Module & Mạch phát triển', 'Mạch nguồn'],
+        manufacturers: ['Arduino', 'Raspberry Pi', 'Espressif', 'Aosong', 'Texas Instruments', 'STMicroelectronics']
+    };
+
+    let currentUser = null;
+    let cart = [];
+
+    // --- ROUTING / PAGE DISPLAY ---
+    function showPage(pageId) {
+        document.querySelectorAll('main > section').forEach(page => page.classList.remove('active'));
+        const newPage = document.getElementById(pageId);
+        if (newPage) newPage.classList.add('active');
+        // Do not change window hash for dashboard to avoid confusing navigation
+        if (pageId !== 'dashboard') {
+            window.location.hash = pageId;
+        }
+        window.scrollTo(0, 0);
+    }
+    
+    function handleRouteChange() {
+        const hash = window.location.hash.substring(1) || 'home';
+        
+        // Render content for specific pages that need it on load
+        if (hash === 'dashboard') {
+            renderDashboard();
+        }
+        if (hash === 'cart') {
+            renderCartPage();
+        }
+
+        if (hash.startsWith('product-detail-')) {
+            renderProductDetail(parseInt(hash.split('-')[2]));
+            showPage('product-detail');
+        } else {
+            showPage(hash);
+        }
+    }
+
+    // --- UC01: ACCOUNT MANAGEMENT ---
+    function login(email, password) {
+        const user = db.users.find(u => u.email === email && u.password === password);
+        if (!user) { alert('Thông tin đăng nhập không chính xác.'); return; }
+        if (!user.active) { alert('Tài khoản của bạn đã bị khóa.'); return; }
+        currentUser = user;
+        loadCart();
+        updateUIForUser();
+        showPage('home');
+    }
+
+    function logout() {
+        saveCart();
+        currentUser = null;
+        cart = [];
+        updateUIForUser();
+        showPage('home');
+    }
+    
+    function register(name, email, phone, password) {
+        if (db.users.some(u => u.email === email)) {
+            alert('Email này đã được sử dụng.'); return;
+        }
+        const newUser = { id: Date.now(), name, email, phone, password, role: 'customer', active: true };
+        db.users.push(newUser);
+        alert('Đăng ký thành công! Vui lòng đăng nhập.');
+        showPage('login');
+    }
+    
+    // --- UC02: PRODUCT SEARCH & BROWSE ---
+    function renderProducts(filters = {}) {
+        let filteredProducts = db.products;
+        if (filters.searchTerm) {
+            const term = filters.searchTerm.toLowerCase();
+            filteredProducts = filteredProducts.filter(p => p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term));
+        }
+        if (filters.category && filters.category !== 'all') filteredProducts = filteredProducts.filter(p => p.category === filters.category);
+        if (filters.manufacturer && filters.manufacturer !== 'all') filteredProducts = filteredProducts.filter(p => p.manufacturer === filters.manufacturer);
+        
+        document.getElementById('no-product-found').style.display = filteredProducts.length === 0 ? 'block' : 'none';
+        document.getElementById('product-list').innerHTML = filteredProducts.map(p => `
+            <div class="product-card" data-id="${p.id}">
+                <img src="${p.img}" alt="${p.name}">
+                <div class="product-info">
+                    <div><h3>${p.name}</h3><p class="product-price">${p.price.toLocaleString('vi-VN')}đ</p></div>
+                    <button class="button" data-id="${p.id}">Xem Chi Tiết</button>
+                </div>
+            </div>`).join('');
+    }
+    
+    function renderProductDetail(productId) {
+        const product = db.products.find(p => p.id === productId);
+        if (!product) { showPage('products'); return; }
+        document.getElementById('product-detail-content').innerHTML = `
+            <div class="product-detail-layout">
+                <div class="product-detail-image"><img src="${product.img}" alt="${product.name}"></div>
+                <div class="product-detail-info">
+                    <h1>${product.name}</h1>
+                    <p class="product-detail-price">${product.price.toLocaleString('vi-VN')}đ</p>
+                    <p class="product-detail-stock">Tình trạng: <strong>${product.stock > 0 ? `Còn hàng (${product.stock} sản phẩm)` : 'Tạm hết hàng'}</strong></p>
+                    <p>${product.description}</p>
+                    <div class="add-to-cart-form">
+                        <label for="quantity">Số lượng:</label>
+                        <input type="number" id="quantity" value="1" min="1" max="${product.stock}">
+                        <button id="add-to-cart-btn" class="button" data-id="${product.id}" ${product.stock === 0 ? 'disabled' : ''}>Thêm vào giỏ hàng</button>
+                    </div>
+                    <div class="product-specs">
+                        <h3>Thông số kỹ thuật</h3>
+                        <ul>${Object.entries(product.specs).map(([key, value]) => `<li><span>${key}</span><span>${value}</span></li>`).join('')}</ul>
+                        ${product.datasheetUrl && product.datasheetUrl !== '#' ? `<a href="${product.datasheetUrl}" target="_blank" class="datasheet-link button">Tải Datasheet (PDF)</a>` : ''}
+                    </div>
+                </div>
+            </div>`;
+    }
+    
+    // --- UC03 & UC04: CART & CHECKOUT ---
+    function addToCart(productId, quantity) {
+        if (!currentUser) { alert('Vui lòng đăng nhập để mua hàng.'); showPage('login'); return; }
+        const product = db.products.find(p => p.id === productId);
+        if (quantity > product.stock) { alert('Số lượng trong kho không đủ.'); return; }
+        const existingItem = cart.find(item => item.productId === productId);
+        if (existingItem) {
+            if (existingItem.quantity + quantity > product.stock) {
+                 alert('Số lượng trong kho không đủ.'); return;
+            }
+            existingItem.quantity += quantity;
+        } else {
+            cart.push({ productId, quantity });
+        }
+        alert(`Đã thêm ${quantity} x ${product.name} vào giỏ hàng!`);
+        updateCartUI();
+    }
+
+    function renderCartPage() {
+        const cartItemsEl = document.getElementById('cart-items');
+        if (cart.length === 0) {
+            cartItemsEl.innerHTML = '<p>Giỏ hàng của bạn đang trống.</p>';
+            document.getElementById('cart-summary').style.display = 'none';
+        } else {
+            cartItemsEl.innerHTML = cart.map(item => {
+                const product = db.products.find(p => p.id === item.productId);
+                if (!product) return ''; // Handle case where product might have been deleted
+                return `<div class="cart-item"><img src="${product.img}" alt="${product.name}"><div><strong>${product.name}</strong><br><span>${product.price.toLocaleString('vi-VN')}đ x ${item.quantity}</span></div><strong>${(product.price * item.quantity).toLocaleString('vi-VN')}đ</strong><button class="button-danger remove-from-cart-btn" data-id="${item.productId}">Xóa</button></div>`;
+            }).join('');
+            const totalPrice = cart.reduce((total, item) => {
+                const product = db.products.find(p => p.id === item.productId);
+                return total + (product ? product.price * item.quantity : 0);
+            }, 0);
+            document.getElementById('cart-total-price').textContent = totalPrice.toLocaleString('vi-VN');
+            document.getElementById('cart-summary').style.display = 'block';
+        }
+    }
+    
+    function renderCheckoutPage() {
+        if (cart.length === 0) { showPage('cart'); return; }
+        if (currentUser) {
+            document.getElementById('shipping-name').value = currentUser.name;
+            document.getElementById('shipping-phone').value = currentUser.phone;
+            document.getElementById('shipping-address').value = currentUser.address || '';
+        }
+        const subtotal = cart.reduce((total, item) => total + db.products.find(p => p.id === item.productId).price * item.quantity, 0);
+        const shippingFee = 30000;
+        document.getElementById('summary-items').innerHTML = cart.map(item => `<p>${db.products.find(p => p.id === item.productId).name} x ${item.quantity}</p>`).join('');
+        document.getElementById('final-total-price').textContent = (subtotal + shippingFee).toLocaleString('vi-VN');
+    }
+    
+    // --- DASHBOARD (UC05, UC06, UC07, UC08) ---
+    function renderDashboard() {
+        if (!currentUser || !['admin', 'employee'].includes(currentUser.role)) { showPage('home'); return; }
+        
+        let tabs = `<button class="dashboard-tab-btn" data-tab="products">Quản Lý Sản phẩm</button><button class="dashboard-tab-btn" data-tab="orders">Quản Lý Đơn hàng</button>`;
+        if (currentUser.role === 'admin') {
+            tabs += `<button class="dashboard-tab-btn" data-tab="users">Quản Lý Người dùng</button><button class="dashboard-tab-btn" data-tab="stats">Báo cáo Thống kê</button>`;
+        }
+        document.getElementById('dashboard-nav-bar').innerHTML = tabs;
+
+        let content = `<div id="dashboard-products" class="dashboard-content"></div><div id="dashboard-orders" class="dashboard-content"></div>`;
+        if (currentUser.role === 'admin') {
+            content += `<div id="dashboard-users" class="dashboard-content"></div><div id="dashboard-stats" class="dashboard-content"></div>`;
+        }
+        document.getElementById('dashboard-content-container').innerHTML = content;
+        
+        switchDashboardTab(document.querySelector('.dashboard-tab-btn').dataset.tab);
+    }
+    
+    function renderDashboardProducts() {
+        const content = `<button id="add-product-btn" class="button">Thêm sản phẩm mới</button>
+            <table><thead><tr><th>SKU</th><th>Tên</th><th>Giá</th><th>Kho</th><th>Hành động</th></tr></thead>
+            <tbody>${db.products.map(p => `<tr><td>${p.sku}</td><td>${p.name}</td><td>${p.price.toLocaleString('vi-VN')}đ</td><td>${p.stock}</td><td><button class="edit-product-btn button" data-id="${p.id}">Sửa</button> <button class="delete-product-btn button-danger" data-id="${p.id}">Xóa</button></td></tr>`).join('')}</tbody>
+            </table>`;
+        document.getElementById('dashboard-products').innerHTML = content;
+    }
+
+    function renderDashboardOrders() {
+        const statuses = ['Chờ xác nhận', 'Đã xác nhận', 'Đang giao', 'Đã hoàn tất', 'Đã hủy'];
+        const content = `<table><thead><tr><th>Mã ĐH</th><th>Khách hàng</th><th>Tổng tiền</th><th>Ngày đặt</th><th>Trạng thái</th></tr></thead>
+            <tbody>${db.orders.slice().reverse().map(o => `<tr>
+                <td>${o.id}</td><td>${o.customerInfo.name}</td><td>${o.total.toLocaleString('vi-VN')}đ</td><td>${o.date}</td>
+                <td><select class="order-status-select" data-id="${o.id}">${statuses.map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></td>
+            </tr>`).join('')}</tbody></table>`;
+        document.getElementById('dashboard-orders').innerHTML = content;
+    }
+
+    function renderDashboardUsers() {
+        const content = `<table><thead><tr><th>Tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+            <tbody>${db.users.map(u => `<tr>
+                <td>${u.name}</td><td>${u.email}</td><td>${u.role}</td>
+                <td><span class="status-badge ${u.active ? 'status-Đã_xác_nhận' : 'status-Đã_hủy'}">${u.active ? 'Hoạt động' : 'Bị khóa'}</span></td>
+                <td><button class="toggle-lock-user-btn ${u.active ? 'button-danger' : 'button'}" data-id="${u.id}">${u.active ? 'Khóa' : 'Mở khóa'}</button></td>
+            </tr>`).join('')}</tbody></table>`;
+        document.getElementById('dashboard-users').innerHTML = content;
+    }
+
+    function renderDashboardStats() {
+        const totalRevenue = db.orders.filter(o => o.status === 'Đã hoàn tất').reduce((sum, o) => sum + o.total, 0);
+        const bestSellers = {};
+        db.orders.filter(o=> o.status === 'Đã hoàn tất').forEach(o => {
+            o.items.forEach(item => {
+                const productName = db.products.find(p => p.id === item.productId)?.name || 'Sản phẩm đã xóa';
+                bestSellers[productName] = (bestSellers[productName] || 0) + item.quantity;
+            });
+        });
+        const topProducts = Object.entries(bestSellers).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+        const content = `<div class="stats-grid">
+                <div class="stat-card"><h4>Tổng Doanh Thu</h4><p>${totalRevenue.toLocaleString('vi-VN')}đ</p></div>
+                <div class="stat-card"><h4>Tổng Đơn Hàng</h4><p>${db.orders.length}</p></div>
+                <div class="stat-card"><h4>Tổng Người Dùng</h4><p>${db.users.length}</p></div>
+            </div>
+            <h3>Top 5 Sản phẩm bán chạy nhất</h3>
+            <table><thead><tr><th>Tên sản phẩm</th><th>Đã bán</th></tr></thead><tbody>
+            ${topProducts.map(([name, quantity]) => `<tr><td>${name}</td><td>${quantity}</td></tr>`).join('')}
+            </tbody></table>`;
+        document.getElementById('dashboard-stats').innerHTML = content;
+    }
+    
+    function switchDashboardTab(tabId) {
+        document.querySelectorAll('.dashboard-tab-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.querySelector(`.dashboard-tab-btn[data-tab="${tabId}"]`);
+        if(activeBtn) activeBtn.classList.add('active');
+        
+        document.querySelectorAll('.dashboard-content').forEach(content => content.classList.remove('active'));
+        const activeContent = document.getElementById(`dashboard-${tabId}`);
+        if(activeContent) activeContent.classList.add('active');
+        
+        // Render content for the selected tab
+        if(tabId === 'products') renderDashboardProducts();
+        if(tabId === 'orders') renderDashboardOrders();
+        if(tabId === 'users' && currentUser.role === 'admin') renderDashboardUsers();
+        if(tabId === 'stats' && currentUser.role === 'admin') renderDashboardStats();
+    }
+    
+    function openProductModal(productId = null) {
+        const form = document.getElementById('product-form');
+        form.reset();
+        document.getElementById('product-id').value = '';
+        
+        document.getElementById('product-category').innerHTML = db.categories.map(c => `<option value="${c}">${c}</option>`).join('');
+        document.getElementById('product-manufacturer').innerHTML = db.manufacturers.map(m => `<option value="${m}">${m}</option>`).join('');
+
+        if (productId) { // Edit mode
+            const product = db.products.find(p => p.id === productId);
+            document.getElementById('modal-title').textContent = 'Chỉnh Sửa Sản Phẩm';
+            document.getElementById('product-id').value = product.id;
+            document.getElementById('product-name').value = product.name;
+            document.getElementById('product-sku').value = product.sku;
+            document.getElementById('product-price').value = product.price;
+            document.getElementById('product-stock').value = product.stock;
+            document.getElementById('product-category').value = product.category;
+            document.getElementById('product-manufacturer').value = product.manufacturer;
+            document.getElementById('product-img').value = product.img;
+            document.getElementById('product-datasheet').value = product.datasheetUrl;
+            document.getElementById('product-desc').value = product.description;
+        } else { // Add mode
+            document.getElementById('modal-title').textContent = 'Thêm Sản Phẩm Mới';
+        }
+        document.getElementById('product-modal').style.display = 'block';
+    }
+
+    // --- HELPER & UI FUNCTIONS ---
+    function updateCartUI() { const cartCount = cart.reduce((s,i)=>s+i.quantity,0); const el=document.getElementById('cart-count'); if(!el)return; if(cartCount > 0){ el.textContent=cartCount; el.style.display='inline-block'; } else { el.style.display='none'; } if(window.location.hash.substring(1)==='cart')renderCartPage(); };
+    function updateUIForUser() { const navUl=document.createElement('ul'); let navLinks=`<li><a class="nav-link" href="#home">Trang Chủ</a></li><li><a class="nav-link" href="#products">Sản Phẩm</a></li>`; if(currentUser){if(['admin','employee'].includes(currentUser.role))navLinks+=`<li><a class="nav-link" href="#dashboard">Bảng Điều Khiển</a></li>`; navLinks+=`<li><a id="logout-btn" href="#">Đăng Xuất (${currentUser.name})</a></li>`;}else{navLinks+=`<li><a class="nav-link" href="#login">Đăng Nhập</a></li>`;} if(!currentUser||currentUser.role==='customer'){navLinks+=`<li><a class="nav-link" href="#cart" id="cart-icon">🛒<span id="cart-count">0</span></a></li>`;} navUl.innerHTML=navLinks; const mainNavBar = document.getElementById('main-nav-bar'); mainNavBar.innerHTML=''; mainNavBar.appendChild(navUl); updateCartUI(); };
+    function saveCart() { if(currentUser)localStorage.setItem(`cart_${currentUser.id}`, JSON.stringify(cart)); };
+    function loadCart() { cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`)) || []; };
+    function setupFilters() { const catF=document.getElementById('filter-category'); const manF=document.getElementById('filter-manufacturer'); catF.innerHTML='<option value="all">Tất cả</option>'+db.categories.map(c=>`<option value="${c}">${c}</option>`).join(''); manF.innerHTML='<option value="all">Tất cả</option>'+db.manufacturers.map(m=>`<option value="${m}">${m}</option>`).join(''); const apply=()=>renderProducts({searchTerm:document.getElementById('search-box').value,category:catF.value,manufacturer:manF.value}); document.getElementById('search-box').addEventListener('input',apply); catF.addEventListener('change',apply); manF.addEventListener('change',apply); };
+
+    // --- EVENT LISTENERS ---
+    function setupApp() {
+        window.addEventListener('hashchange', handleRouteChange);
+        document.body.addEventListener('click', e => {
+            if (e.target.matches('.nav-link')) { e.preventDefault(); window.location.hash = e.target.getAttribute('href'); }
+            if (e.target.matches('#logout-btn')) { e.preventDefault(); logout(); }
+            if (e.target.matches('.dashboard-tab-btn')) switchDashboardTab(e.target.dataset.tab);
+        });
+
+        document.getElementById('login-form').addEventListener('submit', e => { e.preventDefault(); login(document.getElementById('login-email').value, document.getElementById('login-password').value); });
+        document.getElementById('register-form').addEventListener('submit', e => { e.preventDefault(); register(document.getElementById('reg-name').value, document.getElementById('reg-email').value, document.getElementById('reg-phone').value, document.getElementById('reg-password').value); });
+        
+        document.getElementById('product-list').addEventListener('click', e => { const card = e.target.closest('.product-card, .button'); if (card) window.location.hash = `#product-detail-${card.dataset.id}`; });
+        document.getElementById('product-detail').addEventListener('click', e => { if (e.target.id === 'add-to-cart-btn') addToCart(parseInt(e.target.dataset.id), parseInt(document.getElementById('quantity').value)); });
+        
+        document.getElementById('cart-items').addEventListener('click', e => {
+            if (e.target.matches('.remove-from-cart-btn')) {
+                cart = cart.filter(item => item.productId !== parseInt(e.target.dataset.id));
+                updateCartUI(); // This now also re-renders the cart page if active
+            }
+        });
+        document.getElementById('checkout-btn').addEventListener('click', () => { renderCheckoutPage(); showPage('checkout'); });
+        document.getElementById('confirm-order-btn').addEventListener('click', () => {
+             const newOrder = {
+                id: Date.now(), userId: currentUser.id,
+                customerInfo: { name: document.getElementById('shipping-name').value, address: document.getElementById('shipping-address').value, phone: document.getElementById('shipping-phone').value },
+                items: cart.map(i => ({...i})), // clone cart items
+                total: cart.reduce((total, item) => total + db.products.find(p => p.id === item.productId).price * item.quantity, 0) + 30000,
+                status: 'Chờ xác nhận', date: new Date().toISOString().slice(0, 10)
+            };
+            db.orders.push(newOrder);
+            cart.forEach(item => { db.products.find(p => p.id === item.productId).stock -= item.quantity; });
+            cart = [];
+            updateCartUI();
+            alert(`Đặt hàng thành công! Mã đơn hàng của bạn là: ${newOrder.id}.`);
+            showPage('home');
+        });
+
+        // Dashboard Listeners
+        document.getElementById('dashboard-content-container').addEventListener('click', e => {
+            if (e.target.id === 'add-product-btn') openProductModal();
+            if (e.target.matches('.edit-product-btn')) openProductModal(parseInt(e.target.dataset.id));
+            if (e.target.matches('.delete-product-btn')) {
+                if(confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+                    db.products = db.products.filter(p => p.id !== parseInt(e.target.dataset.id));
+                    renderDashboardProducts();
+                }
+            }
+            if(e.target.matches('.toggle-lock-user-btn')) {
+                const user = db.users.find(u => u.id === parseInt(e.target.dataset.id));
+                if(user) { user.active = !user.active; renderDashboardUsers(); }
+            }
+        });
+
+        document.getElementById('dashboard-content-container').addEventListener('change', e => {
+            if (e.target.matches('.order-status-select')) {
+                const order = db.orders.find(o => o.id === parseInt(e.target.dataset.id));
+                if(order) {
+                    order.status = e.target.value;
+                    alert(`Đã cập nhật trạng thái đơn hàng #${order.id}. Email thông báo đã được gửi (mô phỏng).`);
+                }
+            }
+        });
+
+        // Modal Listeners
+        document.getElementById('close-modal-btn').addEventListener('click', () => document.getElementById('product-modal').style.display = 'none');
+        document.getElementById('product-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('product-id').value);
+            const productData = {
+                name: document.getElementById('product-name').value, sku: document.getElementById('product-sku').value,
+                price: parseInt(document.getElementById('product-price').value), stock: parseInt(document.getElementById('product-stock').value),
+                category: document.getElementById('product-category').value, manufacturer: document.getElementById('product-manufacturer').value,
+                img: document.getElementById('product-img').value, datasheetUrl: document.getElementById('product-datasheet').value,
+                description: document.getElementById('product-desc').value, specs: {} // Simplified for this demo
+            };
+            if(id) { // Update
+                const index = db.products.findIndex(p => p.id === id);
+                if (index !== -1) db.products[index] = { ...db.products[index], ...productData, id: id };
+            } else { // Add
+                db.products.push({ id: Date.now(), ...productData });
+            }
+            document.getElementById('product-modal').style.display = 'none';
+            renderDashboardProducts();
+        });
+
+        handleRouteChange();
+        updateUIForUser();
+        renderProducts();
+        setupFilters();
+    }
+    
+    setupApp();
+});
+</script>
+</body>
+</html>
+
